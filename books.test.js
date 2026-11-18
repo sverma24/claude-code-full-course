@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { lateFee, isOverdue, sortByDue, isDueSoon, returnBook } = require('./books.js');
+const { daysLeft, lateFee, isOverdue, sortByDue, isDueSoon, returnBook } = require('./books.js');
 
 // Both dates are YYYY-MM-DD strings so they parse as UTC and stay deterministic.
 const TODAY = '2026-01-31';
@@ -106,4 +106,20 @@ test('isDueSoon: missing or invalid due date is false', () => {
   assert.equal(isDueSoon('', NOW, 7), false);
   assert.equal(isDueSoon(undefined, NOW, 7), false);
   assert.equal(isDueSoon('not-a-date', NOW, 7), false);
+});
+
+// Regression: a mid-day "now" must not shift day counts. A book due tomorrow
+// said "Due today" and fees started a day early.
+const MIDDAY = '2026-03-10T15:00:00Z';
+
+test('daysLeft: mid-day counts calendar days, not elapsed 24h periods', () => {
+  assert.equal(daysLeft('2026-03-11', MIDDAY), 1); // due tomorrow
+  assert.equal(daysLeft('2026-03-10', MIDDAY), 0); // due today
+  assert.equal(daysLeft('2026-03-09', MIDDAY), -1); // due yesterday
+});
+
+test('lateFee: mid-day, fee starts the day after the due date', () => {
+  assert.equal(lateFee('2026-03-10', MIDDAY), 0); // due today: free
+  assert.equal(lateFee('2026-03-09', MIDDAY), 0.25); // one day late
+  assert.equal(isOverdue('2026-03-10', MIDDAY), false);
 });

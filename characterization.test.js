@@ -37,18 +37,17 @@ test('daysLeft: accepts a Date or a string for "today"', () => {
   assert.equal(daysLeft('2026-03-11', MIDNIGHT.getTime()), 1);
 });
 
-test('daysLeft: due today later in the day is already -1', () => {
-  // BUG? A book due today reads as one day late once the clock passes
-  // midnight UTC, because the date-only due string is midnight UTC and
-  // Math.floor rounds the negative fraction down.
-  assert.equal(daysLeft('2026-03-10', AFTERNOON), -1);
+test('daysLeft: due today later in the day is still 0', () => {
+  // Fixed: this used to be -1 (book due today read as late) because elapsed
+  // time was floored. Day counts now compare calendar days.
+  assert.equal(daysLeft('2026-03-10', AFTERNOON), 0);
 });
 
-test('daysLeft: every later-in-the-day reading is shifted a day', () => {
-  // BUG? Same floor effect: tomorrow shows as 0, yesterday as -2.
-  assert.equal(daysLeft('2026-03-11', AFTERNOON), 0);
-  assert.equal(daysLeft('2026-03-09', AFTERNOON), -2);
-  assert.equal(daysLeft('2026-03-20', AFTERNOON), 9);
+test('daysLeft: later-in-the-day readings are not shifted', () => {
+  // Fixed: these used to be 0, -2 and 9; the time of day no longer matters.
+  assert.equal(daysLeft('2026-03-11', AFTERNOON), 1);
+  assert.equal(daysLeft('2026-03-09', AFTERNOON), -1);
+  assert.equal(daysLeft('2026-03-20', AFTERNOON), 10);
 });
 
 test('daysLeft: a full-timestamp due date is not treated as date-only', () => {
@@ -81,15 +80,14 @@ test('statusText: several days late', () => {
   assert.equal(statusText({ due: '2026-03-05' }, MIDNIGHT), 'Overdue by 5 days');
 });
 
-test('statusText: due today, checked in the afternoon, says overdue', () => {
-  // BUG? Follows from daysLeft being -1 here. The book is due today but the
-  // page says it is overdue.
-  assert.equal(statusText({ due: '2026-03-10' }, AFTERNOON), 'Overdue by 1 days');
+test('statusText: due today, checked in the afternoon, says due today', () => {
+  // Fixed: used to say 'Overdue by 1 days' because daysLeft was -1.
+  assert.equal(statusText({ due: '2026-03-10' }, AFTERNOON), 'Due today');
 });
 
-test('statusText: due tomorrow, checked in the afternoon, says due today', () => {
-  // BUG? Follows from daysLeft being 0 here.
-  assert.equal(statusText({ due: '2026-03-11' }, AFTERNOON), 'Due today');
+test('statusText: due tomorrow, checked in the afternoon, says due tomorrow', () => {
+  // Fixed: used to say 'Due today' because daysLeft was 0. This is the report.
+  assert.equal(statusText({ due: '2026-03-11' }, AFTERNOON), 'Due tomorrow');
 });
 
 test('statusText: empty due date', () => {

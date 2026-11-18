@@ -6,7 +6,8 @@ const DAY = 24 * 60 * 60 * 1000;
 
 // Whole days from today until the due date. Negative means late.
 function daysLeft(dueDate, today) {
-  return Math.floor((new Date(dueDate) - new Date(today)) / DAY);
+  // Compare calendar days, not elapsed time, so the time of day doesn't shift the count.
+  return Math.floor(new Date(dueDate) / DAY) - Math.floor(new Date(today) / DAY);
 }
 
 function isOverdue(dueDate, today) {
