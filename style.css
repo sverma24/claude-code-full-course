@@ -34,3 +34,11 @@ form { background: #fff; border: 1px solid #e3ddcc; padding: 16px; margin-top: 2
 form h2 { margin-top: 0; font-size: 20px; }
 input { display: block; width: 100%; box-sizing: border-box; padding: 8px; margin-bottom: 10px; font-size: 16px; }
 button { background: #2f4a3a; color: #fff; border: 0; padding: 8px 14px; font-size: 15px; cursor: pointer; }
+
+/* search & filter */
+.filters { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.filters label { display: flex; align-items: center; gap: 8px; }
+.filters label:first-child { flex: 1; }
+.filters input[type="search"] { margin-bottom: 0; }
+.filters .check input { width: auto; display: inline; margin: 0; }
+.empty { color: #6b6658; text-align: center; padding: 20px; background: #fff; border: 1px dashed #e3ddcc; }

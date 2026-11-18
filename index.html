@@ -13,6 +13,10 @@
   </header>
 
   <main>
+    <div class="filters">
+      <label>Search <input id="search" type="search"></label>
+      <label class="check"><input id="due-soon" type="checkbox"> Due soon</label>
+    </div>
     <ul id="books"></ul>
     <p class="total">Late fees owed: <span id="total">$0.00</span></p>
 
@@ -26,6 +30,7 @@
   </main>
 
   <script src="books.js"></script>
+  <script src="filter.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

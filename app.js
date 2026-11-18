@@ -54,17 +54,36 @@ function buildRow(book, now) {
   return li;
 }
 
+function buildEmpty(message) {
+  const li = document.createElement('li');
+  li.className = 'empty';
+  li.textContent = message;
+  return li;
+}
+
+// Filter state lives in the DOM only; it is never saved.
+const searchEl = document.getElementById('search');
+const dueSoonEl = document.getElementById('due-soon');
+
 function render() {
   const now = new Date();
-  const books = sortByDue(load());
+  const all = sortByDue(load());
+  const visible = filterBooks(all, searchEl.value, dueSoonEl.checked, now);
   const list = document.getElementById('books');
   list.innerHTML = '';
 
-  books.forEach((book) => {
-    list.appendChild(buildRow(book, now));
-  });
+  if (all.length === 0) {
+    list.appendChild(buildEmpty('No books borrowed.'));
+  } else if (visible.length === 0) {
+    list.appendChild(buildEmpty('No books match your search.'));
+  } else {
+    visible.forEach((book) => {
+      list.appendChild(buildRow(book, now));
+    });
+  }
 
-  const total = sumFees(books, now);
+  // The total covers every stored book, not just the visible ones.
+  const total = sumFees(all, now);
   const totalEl = document.getElementById('total');
   totalEl.textContent = '$' + total.toFixed(2);
   totalEl.parentElement.classList.toggle('high', total > 5);
@@ -79,6 +98,10 @@ document.getElementById('add').addEventListener('submit', (e) => {
   form.reset();
   render();
 });
+
+searchEl.addEventListener('input', render);
+dueSoonEl.addEventListener('change', render);
+dueSoonEl.addEventListener('input', render);
 
 document.getElementById('books').addEventListener('click', (e) => {
   if (e.target.tagName !== 'BUTTON') return;
