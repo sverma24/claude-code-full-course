@@ -64,7 +64,10 @@ function render() {
     list.appendChild(buildRow(book, now));
   });
 
-  document.getElementById('total').textContent = '$' + sumFees(books, now).toFixed(2);
+  const total = sumFees(books, now);
+  const totalEl = document.getElementById('total');
+  totalEl.textContent = '$' + total.toFixed(2);
+  totalEl.parentElement.classList.toggle('high', total > 5);
 }
 
 document.getElementById('add').addEventListener('submit', (e) => {
