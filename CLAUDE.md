@@ -24,6 +24,10 @@ Two plain scripts loaded in order by `index.html` (no modules/bundler):
 - Fee is capped at $5.00 per book (`FEE_CAP`).
 - List is sorted soonest-due first.
 
+## Next features
+
+Two planned features are specified in [SPEC.md](SPEC.md): search and filter (search box plus a "Due soon" checkbox using `isDueSoon`) and calendar export (an "Export due dates" button that downloads `books.ics`). Read SPEC.md for acceptance criteria and edge cases before implementing either, and keep new logic pure in `books.js` with tests in `books.test.js`.
+
 ## Known issues in the current code
 
 These look like bugs rather than intended behavior; verify before relying on them:
