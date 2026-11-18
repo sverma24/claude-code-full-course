@@ -9,14 +9,19 @@ A static, dependency-free page for tracking borrowed library books (due dates, o
 ## Commands
 
 - Run: open `index.html` directly in a browser.
-- Test: `npm test` (runs `node --test`; Node's built-in runner, no dependencies). Single file: `node --test path/to/file.test.js`. Tests live in `books.test.js` (covers `lateFee` and `sortByDue`).
+- Test: `npm test` (runs `node --test`; Node's built-in runner, no dependencies). Single file: `node --test path/to/file.test.js`. Tests: `books.test.js` (`lateFee`, `sortByDue`), `characterization.test.js`, `filter.test.js` (`filterBooks`) and `ics.test.js` (`buildIcs` and helpers).
 
 ## Architecture
 
-Two plain scripts loaded in order by `index.html` (no modules/bundler):
+Plain scripts loaded in this order by `index.html` (no modules/bundler): `books.js`, `filter.js`, `app.js`, `ics.js`, `export.js`.
 
 - `books.js`: pure business logic (`daysLeft`, `isOverdue`, `lateFee`, `sortByDue`). It ends with a guarded `module.exports`, so it works as a browser global *and* is `require()`-able from Node tests. Keep it free of DOM/`localStorage` access to preserve that.
-- `app.js`: DOM and storage layer. Relies on the globals from `books.js`. `render()` re-reads from `localStorage` and rebuilds the whole list on every change; add/return handlers call `save()` then `render()`.
+- `filter.js`: pure `filterBooks(books, query, dueSoonOnly, now)` for search and the "Due soon" checkbox. Same guarded `module.exports` pattern; no DOM access.
+- `app.js`: DOM and storage layer. Relies on the globals from `books.js` and `filter.js`. `render()` re-reads from `localStorage` and rebuilds the whole list on every change; add/return handlers call `save()` then `render()`. Filter state is read from the DOM and never persisted.
+- `ics.js`: pure calendar logic (`buildIcs`, `escapeText`, `foldLine`, date helpers); returns `null` when there is nothing to export. Guarded `module.exports`, no DOM access.
+- `export.js`: DOM wiring for the "Export due dates" button. Runs after `app.js`, uses its global `load()` (all stored books, so filters never affect the export), and downloads `books.ics`.
+
+New pure logic lives in its own file (`filter.js`, `ics.js`) with its own test file rather than in `books.js`, so parallel work does not collide on one `module.exports`.
 
 ## Library rules (from README, implemented in `books.js`)
 
@@ -24,9 +29,9 @@ Two plain scripts loaded in order by `index.html` (no modules/bundler):
 - Fee is capped at $5.00 per book (`FEE_CAP`).
 - List is sorted soonest-due first.
 
-## Next features
+## Features
 
-Two planned features are specified in [SPEC.md](SPEC.md): search and filter (search box plus a "Due soon" checkbox using `isDueSoon`) and calendar export (an "Export due dates" button that downloads `books.ics`). Read SPEC.md for acceptance criteria and edge cases before implementing either, and keep new logic pure in `books.js` with tests in `books.test.js`.
+Search/filter and calendar export (specified in [SPEC.md](SPEC.md)) are implemented. Read SPEC.md for the acceptance criteria and edge cases before changing either. `statusText` in `app.js` must stay as is: `characterization.test.js` extracts its source with a regex.
 
 ## Known issues in the current code
 
