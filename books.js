@@ -16,13 +16,14 @@ function isOverdue(dueDate, today) {
 // 25 cents for every day after the due date.
 function lateFee(dueDate, today) {
   const daysLate = -daysLeft(dueDate, today);
-  if (daysLate <= 0) return 0;
-  return daysLate * FEE_PER_DAY;
+  if (!(daysLate > 0)) return 0; // also catches NaN (missing/invalid due date)
+  return Math.min(daysLate * FEE_PER_DAY, FEE_CAP);
 }
 
 // Soonest due first.
 function sortByDue(books) {
-  return books.slice().sort((a, b) => a.due > b.due);
+  const key = (b) => b.due || '9999-12-31'; // no date sorts last
+  return books.slice().sort((a, b) => key(a).localeCompare(key(b)));
 }
 
 if (typeof module !== 'undefined') {
