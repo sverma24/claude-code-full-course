@@ -13,6 +13,13 @@ function isOverdue(dueDate, today) {
   return daysLeft(dueDate, today) < 0;
 }
 
+// True when due within the next `days` days (today included) and not overdue.
+// A missing or invalid due date gives NaN, so every comparison is false.
+function isDueSoon(dueDate, today, days) {
+  const left = daysLeft(dueDate, today);
+  return left >= 0 && left <= days;
+}
+
 // 25 cents for every day after the due date.
 function lateFee(dueDate, today) {
   const daysLate = -daysLeft(dueDate, today);
@@ -27,5 +34,5 @@ function sortByDue(books) {
 }
 
 if (typeof module !== 'undefined') {
-  module.exports = { FEE_PER_DAY, FEE_CAP, daysLeft, isOverdue, lateFee, sortByDue };
+  module.exports = { FEE_PER_DAY, FEE_CAP, daysLeft, isOverdue, isDueSoon, lateFee, sortByDue };
 }

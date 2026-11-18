@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { lateFee, isOverdue, sortByDue } = require('./books.js');
+const { lateFee, isOverdue, sortByDue, isDueSoon } = require('./books.js');
 
 // Both dates are YYYY-MM-DD strings so they parse as UTC and stay deterministic.
 const TODAY = '2026-01-31';
@@ -59,4 +59,35 @@ test('sortByDue: books with no due date go last', () => {
 test('sortByDue: equal due dates keep both books', () => {
   const books = [{ title: 'a', due: '2026-01-01' }, { title: 'b', due: '2026-01-01' }];
   assert.equal(sortByDue(books).length, 2);
+});
+
+// isDueSoon uses a fixed UTC timestamp for "today" so results never depend on the clock.
+const NOW = '2026-01-31T00:00:00Z';
+
+test('isDueSoon: due within the window is true', () => {
+  assert.equal(isDueSoon('2026-02-03', NOW, 7), true);
+});
+
+test('isDueSoon: due exactly `days` days away is true', () => {
+  assert.equal(isDueSoon('2026-02-07', NOW, 7), true);
+});
+
+test('isDueSoon: due beyond the window is false', () => {
+  assert.equal(isDueSoon('2026-02-08', NOW, 7), false);
+});
+
+test('isDueSoon: due today counts as due soon, not overdue', () => {
+  assert.equal(isDueSoon('2026-01-31', NOW, 3), true);
+  assert.equal(isDueSoon('2026-01-31', NOW, 0), true);
+});
+
+test('isDueSoon: overdue books are never due soon', () => {
+  assert.equal(isDueSoon('2026-01-30', NOW, 7), false);
+  assert.equal(isDueSoon('2025-12-01', NOW, 7), false);
+});
+
+test('isDueSoon: missing or invalid due date is false', () => {
+  assert.equal(isDueSoon('', NOW, 7), false);
+  assert.equal(isDueSoon(undefined, NOW, 7), false);
+  assert.equal(isDueSoon('not-a-date', NOW, 7), false);
 });
