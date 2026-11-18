@@ -33,6 +33,12 @@ function sortByDue(books) {
   return books.slice().sort((a, b) => key(a).localeCompare(key(b)));
 }
 
+// Remove just one copy of a title (the first match), leaving duplicates alone.
+function returnBook(books, title) {
+  const i = books.findIndex((b) => b.title === title);
+  return i === -1 ? books : books.filter((_, j) => j !== i);
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { FEE_PER_DAY, FEE_CAP, daysLeft, isOverdue, isDueSoon, lateFee, sortByDue };
+  module.exports = { FEE_PER_DAY, FEE_CAP, daysLeft, isOverdue, isDueSoon, lateFee, sortByDue, returnBook };
 }

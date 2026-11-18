@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { lateFee, isOverdue, sortByDue, isDueSoon } = require('./books.js');
+const { lateFee, isOverdue, sortByDue, isDueSoon, returnBook } = require('./books.js');
 
 // Both dates are YYYY-MM-DD strings so they parse as UTC and stay deterministic.
 const TODAY = '2026-01-31';
@@ -59,6 +59,22 @@ test('sortByDue: books with no due date go last', () => {
 test('sortByDue: equal due dates keep both books', () => {
   const books = [{ title: 'a', due: '2026-01-01' }, { title: 'b', due: '2026-01-01' }];
   assert.equal(sortByDue(books).length, 2);
+});
+
+test('returnBook: returning one of two copies of a title keeps the other', () => {
+  const books = [
+    { title: 'Dune', author: 'Frank Herbert', due: '2026-02-01' },
+    { title: 'Dune', author: 'Frank Herbert', due: '2026-02-15' },
+    { title: 'Emma', author: 'Jane Austen', due: '2026-02-10' }
+  ];
+  const result = returnBook(books, 'Dune');
+  assert.deepEqual(result.map((b) => b.title), ['Dune', 'Emma']);
+  assert.equal(books.length, 3); // input not mutated
+});
+
+test('returnBook: unknown title changes nothing', () => {
+  const books = [{ title: 'Emma', due: '2026-02-10' }];
+  assert.deepEqual(returnBook(books, 'Dune'), books);
 });
 
 // isDueSoon uses a fixed UTC timestamp for "today" so results never depend on the clock.

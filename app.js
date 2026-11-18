@@ -69,7 +69,7 @@ document.getElementById('add').addEventListener('submit', (e) => {
 
 document.getElementById('books').addEventListener('click', (e) => {
   if (e.target.tagName !== 'BUTTON') return;
-  save(load().filter((b) => b.title !== e.target.dataset.title));
+  save(returnBook(load(), e.target.dataset.title));
   render();
 });
 
