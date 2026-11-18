@@ -34,27 +34,37 @@ function statusText(book, now) {
   return 'Due in ' + left + ' days';
 }
 
+function sumFees(books, now) {
+  let total = 0;
+  books.forEach((book) => {
+    total += lateFee(book.due, now);
+  });
+  return total;
+}
+
+function buildRow(book, now) {
+  const fee = lateFee(book.due, now);
+  const li = document.createElement('li');
+  li.className = isOverdue(book.due, now) ? 'book late' : 'book';
+  li.innerHTML =
+    '<div><strong>' + book.title + '</strong><span>' + book.author + '</span></div>' +
+    '<div class="status">' + statusText(book, now) +
+    (fee > 0 ? '<b>$' + fee.toFixed(2) + '</b>' : '') + '</div>' +
+    '<button data-title="' + book.title + '">Returned</button>';
+  return li;
+}
+
 function render() {
   const now = new Date();
   const books = sortByDue(load());
   const list = document.getElementById('books');
   list.innerHTML = '';
-  let total = 0;
 
   books.forEach((book) => {
-    const fee = lateFee(book.due, now);
-    total += fee;
-    const li = document.createElement('li');
-    li.className = isOverdue(book.due, now) ? 'book late' : 'book';
-    li.innerHTML =
-      '<div><strong>' + book.title + '</strong><span>' + book.author + '</span></div>' +
-      '<div class="status">' + statusText(book, now) +
-      (fee > 0 ? '<b>$' + fee.toFixed(2) + '</b>' : '') + '</div>' +
-      '<button data-title="' + book.title + '">Returned</button>';
-    list.appendChild(li);
+    list.appendChild(buildRow(book, now));
   });
 
-  document.getElementById('total').textContent = '$' + total.toFixed(2);
+  document.getElementById('total').textContent = '$' + sumFees(books, now).toFixed(2);
 }
 
 document.getElementById('add').addEventListener('submit', (e) => {
